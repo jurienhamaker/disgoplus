@@ -1,6 +1,5 @@
-// Package disgoplus wraps github.com/disgoorg/disgo with a discordgoplus-compatible
-// API surface: a Router for commands/components/modals, a Ctx handler context,
-// and convenience response helpers.
+// Package disgoplus wraps github.com/disgoorg/disgo with convenience helpers:
+// a typed Vars map, module registration, and command sync utilities.
 package disgoplus
 
 import (
@@ -9,6 +8,7 @@ import (
 	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/gateway"
+	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/disgo/sharding"
 	"github.com/disgoorg/snowflake/v2"
 )
@@ -16,7 +16,7 @@ import (
 // Bot wraps a disgo *bot.Client and owns the Router.
 type Bot struct {
 	client  *bot.Client
-	Router  *Router
+	Router  handler.Router
 	Sharded bool
 }
 
@@ -24,7 +24,7 @@ type Bot struct {
 // auto-scaling enabled; otherwise a single gateway connection is opened.
 // Extra bot.ConfigOpt values are forwarded to disgo.New.
 func New(token string, sharded bool, opts ...bot.ConfigOpt) (*Bot, error) {
-	r := newRouter()
+	r := handler.New()
 
 	buildOpts := []bot.ConfigOpt{bot.WithEventListeners(r)}
 
