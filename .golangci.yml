@@ -1,0 +1,204 @@
+version: "2"
+run:
+  tests: true
+  timeout: 5m
+  modules-download-mode: readonly
+linters:
+  enable:
+    # default linters
+    - govet
+    - errcheck
+    - staticcheck
+    - ineffassign
+    - unconvert
+    # code quality
+    - revive
+    - errorlint
+    - gocritic
+    - contextcheck
+    - nilerr
+    - noctx
+    - nolintlint
+    - nestif
+    - unparam
+    - whitespace
+    - wrapcheck
+    # security
+    - gosec
+    # style / misc
+    - bodyclose
+    - funlen
+    - gocognit
+    - goconst
+    - godot
+    - godox
+    - gomoddirectives
+    - goprintffuncname
+    - misspell
+    - prealloc
+    - rowserrcheck
+    - sqlclosecheck
+    - tparallel
+    - wsl_v5
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+    rules:
+      # Allow ignoring Close/Sync error returns in defers
+      - text: "Error return value of .*(Close|Sync)\\b"
+        linters:
+          - errcheck
+      # gosec: too noisy for Discord snowflake / int conversions
+      - text: "G115"
+        linters:
+          - gosec
+      # errcheck: DI builder Add() — errors are unrecoverable at startup
+      - text: "Error return value of `.*\\.Add` is not checked"
+        linters:
+          - errcheck
+      # errcheck: discordgoplus response helpers are fire-and-forget
+      - text: "Error return value of `discordgoplus\\."
+        linters:
+          - errcheck
+      # errcheck: discord session methods (reactions, messages, interactions) are fire-and-forget
+      - text: "Error return value of `.*(MessageReaction|ChannelMessage|InteractionRespond|FollowupMessage|UpdateWatchStatus)"
+        linters:
+          - errcheck
+      # errcheck: game Start in goroutines is fire-and-forget auto-restart
+      - source: "go s\\.Start\\("
+        linters:
+          - errcheck
+      # errcheck: database.Disconnect in DI teardown defers
+      - text: "Error return value of `.*\\.Disconnect` is not checked"
+        linters:
+          - errcheck
+      # errcheck: DeleteWithSubContainers in defers — error is unactionable
+      - text: "Error return value of `.*DeleteWithSubContainers` is not checked"
+        linters:
+          - errcheck
+      # gosec G104: duplicate of errcheck — already handled by errcheck exclusions above
+      - text: "G104"
+        linters:
+          - gosec
+      # gosec G404: math/rand for word selection, not cryptography
+      - text: "G404"
+        linters:
+          - gosec
+      # gosec G118: background context goroutines for scheduled bot ops
+      - text: "G118"
+        linters:
+          - gosec
+      # gomoddirectives: replace directives are required for the shared module
+      - text: "local replacement are not allowed"
+        linters:
+          - gomoddirectives
+      # revive: exported symbols do not require doc comments in this codebase
+      - text: "exported: exported"
+        linters:
+          - revive
+      # revive: package stutter is acceptable in these internal packages
+      - text: "type name will be used as.*stutters"
+        linters:
+          - revive
+      # revive: comment format not enforced
+      - text: "comment on exported.*should be of the form"
+        linters:
+          - revive
+      # revive: var-naming for initialisms (ASCIINumbers etc.)
+      - text: "var-naming: var"
+        linters:
+          - revive
+      # wrapcheck: json.Unmarshal errors are context-local, wrapped above
+      - text: "error returned from external package is unwrapped.*json\\.Unmarshal"
+        linters:
+          - wrapcheck
+      # wrapcheck: lifecycle.Connect errors are fatal at startup
+      - text: "error returned from external package is unwrapped: sig: func.*lifecycle.*Connect"
+        linters:
+          - wrapcheck
+      # wrapcheck: fiber HTTP handler returns — fiber handles these as response errors
+      - text: "error returned from external package is unwrapped: sig: func.*fiber"
+        linters:
+          - wrapcheck
+      # wrapcheck: fiber BodyParser — caller checks the wrapped error
+      - text: "error returned from external package is unwrapped: sig: func.*BodyParser"
+        linters:
+          - wrapcheck
+      # gosec G101: env var name constants (e.g. EnvTopGGToken = "TOP_GG_TOKEN") are not credentials
+      - text: "G101"
+        path: "shared/static/env\\.go"
+        linters:
+          - gosec
+      # revive: UPPER_SNAKE_CASE constants are intentional for Discord command ID constants
+      - text: "var-naming: const"
+        linters:
+          - revive
+      # contextcheck: shutdown uses context.Background intentionally — caller ctx is already cancelled
+      - text: "Non-inherited new context"
+        path: "shared/inits/api\\.go"
+        linters:
+          - contextcheck
+      # godot: comments don't require trailing periods in this codebase
+      - text: "Comment should end"
+        linters:
+          - godot
+      # gocritic: os.Exit after defer in main() is intentional for fatal startup errors
+      - text: "exitAfterDefer"
+        linters:
+          - gocritic
+      # nestif: wordle scoring algorithm has inherently complex branching
+      - path: "internal/services/game\\.go"
+        linters:
+          - nestif
+      # contextcheck: game service goroutines use background context intentionally
+      - path: "internal/services/game\\.go"
+        linters:
+          - contextcheck
+      # goconst: repeated strings across different packages can't share a const
+      - path: "internal/slashcommands/"
+        linters:
+          - goconst
+      # prealloc: slice preallocation in slash command builders is not performance-critical
+      - path: "internal/slashcommands/"
+        linters:
+          - prealloc
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+    nestif:
+      min-complexity: 4
+    gocognit:
+      min-complexity: 30
+    funlen:
+      lines: 100
+      statements: 60
+    revive:
+      rules:
+        - name: exported
+        - name: unexported-return
+        - name: error-strings
+        - name: error-return
+        - name: var-naming
+    errorlint:
+      errorf: true
+      asserts: true
+      comparison: true
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+    - golines
+  exclusions:
+    generated: lax
+  settings:
+    goimports:
+      local-prefixes:
+        - jurien.dev/yugen
+    golines:
+      max-len: 80

@@ -53,48 +53,88 @@ func (ctx *Ctx) Next() {
 	if len(ctx.remaining) == 0 {
 		return
 	}
+
 	h := ctx.remaining[0]
 	ctx.remaining = ctx.remaining[1:]
 	h.HandleCommand(ctx)
 }
 
 // CreateMessage responds to the interaction with a new message.
-func (ctx *Ctx) CreateMessage(msg discord.MessageCreate, opts ...rest.RequestOpt) error {
-	return ctx.respondFn(discord.InteractionResponseTypeCreateMessage, msg, opts...)
+func (ctx *Ctx) CreateMessage(
+	msg discord.MessageCreate,
+	opts ...rest.RequestOpt,
+) error {
+	return ctx.respondFn(
+		discord.InteractionResponseTypeCreateMessage,
+		msg,
+		opts...)
 }
 
 // DeferCreateMessage sends a deferred "thinking" response.
-func (ctx *Ctx) DeferCreateMessage(ephemeral bool, opts ...rest.RequestOpt) error {
+func (ctx *Ctx) DeferCreateMessage(
+	ephemeral bool,
+	opts ...rest.RequestOpt,
+) error {
 	var data discord.InteractionResponseData
 	if ephemeral {
 		data = discord.MessageCreate{Flags: discord.MessageFlagEphemeral}
 	}
-	return ctx.respondFn(discord.InteractionResponseTypeDeferredCreateMessage, data, opts...)
+
+	return ctx.respondFn(
+		discord.InteractionResponseTypeDeferredCreateMessage,
+		data,
+		opts...)
 }
 
 // UpdateMessage updates the message a component interaction is from.
-func (ctx *Ctx) UpdateMessage(msg discord.MessageUpdate, opts ...rest.RequestOpt) error {
-	return ctx.respondFn(discord.InteractionResponseTypeUpdateMessage, msg, opts...)
+func (ctx *Ctx) UpdateMessage(
+	msg discord.MessageUpdate,
+	opts ...rest.RequestOpt,
+) error {
+	return ctx.respondFn(
+		discord.InteractionResponseTypeUpdateMessage,
+		msg,
+		opts...)
 }
 
 // DeferUpdateMessage sends a deferred update acknowledgement.
 func (ctx *Ctx) DeferUpdateMessage(opts ...rest.RequestOpt) error {
-	return ctx.respondFn(discord.InteractionResponseTypeDeferredUpdateMessage, nil, opts...)
+	return ctx.respondFn(
+		discord.InteractionResponseTypeDeferredUpdateMessage,
+		nil,
+		opts...)
 }
 
 // Modal responds to the interaction with a modal.
-func (ctx *Ctx) Modal(modal discord.ModalCreate, opts ...rest.RequestOpt) error {
+func (ctx *Ctx) Modal(
+	modal discord.ModalCreate,
+	opts ...rest.RequestOpt,
+) error {
 	return ctx.respondFn(discord.InteractionResponseTypeModal, modal, opts...)
 }
 
 // CreateFollowupMessage creates a followup message after a deferred response.
-func (ctx *Ctx) CreateFollowupMessage(msg discord.MessageCreate, opts ...rest.RequestOpt) (*discord.Message, error) {
-	return ctx.Client.Rest.CreateFollowupMessage(ctx.applicationID, ctx.token, msg, opts...)
+func (ctx *Ctx) CreateFollowupMessage(
+	msg discord.MessageCreate,
+	opts ...rest.RequestOpt,
+) (*discord.Message, error) {
+	return ctx.Client.Rest.CreateFollowupMessage(
+		ctx.applicationID,
+		ctx.token,
+		msg,
+		opts...)
 }
 
 // DeleteFollowupMessage deletes a followup message.
-func (ctx *Ctx) DeleteFollowupMessage(messageID snowflake.ID, opts ...rest.RequestOpt) error {
-	return ctx.Client.Rest.DeleteFollowupMessage(ctx.applicationID, ctx.token, messageID, opts...)
+func (ctx *Ctx) DeleteFollowupMessage(
+	messageID snowflake.ID,
+	opts ...rest.RequestOpt,
+) error {
+	return ctx.Client.Rest.DeleteFollowupMessage(
+		ctx.applicationID,
+		ctx.token,
+		messageID,
+		opts...)
 }
 
 // ApplicationID returns the bot application ID for this interaction.
@@ -127,9 +167,11 @@ func newCommandCtx(
 	if gid := e.GuildID(); gid != nil {
 		ctx.GuildID = *gid
 	}
+
 	ctx.ChannelID = e.Channel().ID()
 	ctx.Member = e.Member()
 	ctx.User = e.User()
+
 	return ctx
 }
 
@@ -142,7 +184,7 @@ func newComponentCtx(
 ) *Ctx {
 	ctx := &Ctx{
 		Client:                  e.Client(),
-		CallerName:              e.ComponentInteraction.Data.CustomID(),
+		CallerName:              e.Data.CustomID(),
 		MessageComponentOptions: options,
 		applicationID:           e.ApplicationID(),
 		token:                   e.Token(),
@@ -150,12 +192,15 @@ func newComponentCtx(
 		remaining:               handlers,
 	}
 	_ = mc
+
 	if gid := e.GuildID(); gid != nil {
 		ctx.GuildID = *gid
 	}
+
 	ctx.ChannelID = e.Channel().ID()
 	ctx.Member = e.Member()
 	ctx.User = e.User()
+
 	return ctx
 }
 
@@ -178,11 +223,14 @@ func newModalCtx(
 		remaining:               handlers,
 	}
 	_ = m
+
 	if gid := e.GuildID(); gid != nil {
 		ctx.GuildID = *gid
 	}
+
 	ctx.ChannelID = e.Channel().ID()
 	ctx.Member = e.Member()
 	ctx.User = e.User()
+
 	return ctx
 }

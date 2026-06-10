@@ -8,7 +8,10 @@ import (
 
 // GetInteractionName returns a slash-command path string like "settings/show".
 // The default delimiter is "/"; pass a custom one as the second argument.
-func GetInteractionName(data discord.SlashCommandInteractionData, delimiter ...string) string {
+func GetInteractionName(
+	data discord.SlashCommandInteractionData,
+	delimiter ...string,
+) string {
 	sep := "/"
 	if len(delimiter) > 0 {
 		sep = delimiter[0]
@@ -18,9 +21,11 @@ func GetInteractionName(data discord.SlashCommandInteractionData, delimiter ...s
 	if data.SubCommandGroupName != nil {
 		name = fmt.Sprintf("%s%s%s", name, sep, *data.SubCommandGroupName)
 	}
+
 	if data.SubCommandName != nil {
 		name = fmt.Sprintf("%s%s%s", name, sep, *data.SubCommandName)
 	}
+
 	return name
 }
 
@@ -28,10 +33,12 @@ func GetInteractionName(data discord.SlashCommandInteractionData, delimiter ...s
 // map[customID → value].
 func ParseModalData(data discord.ModalSubmitInteractionData) map[string]string {
 	result := make(map[string]string)
+
 	for component := range data.AllComponents() {
 		if ti, ok := component.(discord.TextInputComponent); ok {
 			result[ti.CustomID] = ti.Value
 		}
 	}
+
 	return result
 }

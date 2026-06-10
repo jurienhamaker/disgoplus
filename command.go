@@ -36,11 +36,15 @@ func (cmd *Command) toSlashCommandCreate() discord.SlashCommandCreate {
 	}
 	if cmd.SubCommands != nil && cmd.SubCommands.Count() > 0 {
 		for _, sub := range cmd.SubCommands.list() {
-			create.Options = append(create.Options, sub.toApplicationCommandOption())
+			create.Options = append(
+				create.Options,
+				sub.toApplicationCommandOption(),
+			)
 		}
 	} else {
 		create.Options = cmd.Options
 	}
+
 	return create
 }
 
@@ -57,8 +61,10 @@ func (cmd *Command) toApplicationCommandOption() discord.ApplicationCommandOptio
 				group.Options = append(group.Options, sc)
 			}
 		}
+
 		return group
 	}
+
 	return discord.ApplicationCommandOptionSubCommand{
 		Name:        cmd.Name,
 		Description: cmd.Description,

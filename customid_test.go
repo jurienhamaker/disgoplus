@@ -9,6 +9,7 @@ func TestTrySlug_ExactMatch(t *testing.T) {
 	if !ok {
 		t.Fatal("expected match")
 	}
+
 	if len(params) != 0 {
 		t.Fatalf("expected no params, got %v", params)
 	}
@@ -19,19 +20,25 @@ func TestTrySlug_SingleParam(t *testing.T) {
 	if !ok {
 		t.Fatal("expected match")
 	}
+
 	if params["page"] != "3" {
 		t.Fatalf("expected page=3, got %q", params["page"])
 	}
 }
 
 func TestTrySlug_MultiParam(t *testing.T) {
-	params, ok := trySlug("RESET_LEADERBOARD/:reset/:userID", "RESET_LEADERBOARD/true/123456")
+	params, ok := trySlug(
+		"RESET_LEADERBOARD/:reset/:userID",
+		"RESET_LEADERBOARD/true/123456",
+	)
 	if !ok {
 		t.Fatal("expected match")
 	}
+
 	if params["reset"] != "true" {
 		t.Fatalf("expected reset=true, got %q", params["reset"])
 	}
+
 	if params["userID"] != "123456" {
 		t.Fatalf("expected userID=123456, got %q", params["userID"])
 	}

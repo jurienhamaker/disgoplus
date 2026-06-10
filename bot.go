@@ -74,6 +74,7 @@ func (b *Bot) Open(ctx context.Context) error {
 	if b.Sharded {
 		return b.client.OpenShardManager(ctx)
 	}
+
 	return b.client.OpenGateway(ctx)
 }
 

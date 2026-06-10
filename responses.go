@@ -13,22 +13,38 @@ func Defer(ctx *Ctx, ephemeral ...bool) error {
 }
 
 // Respond responds to the interaction with a visible message.
-func Respond(ctx *Ctx, msg discord.MessageCreate, opts ...rest.RequestOpt) error {
+func Respond(
+	ctx *Ctx,
+	msg discord.MessageCreate,
+	opts ...rest.RequestOpt,
+) error {
 	return ctx.CreateMessage(msg, opts...)
 }
 
 // FollowUp sends a followup message after a deferred response.
-func FollowUp(ctx *Ctx, msg discord.MessageCreate, opts ...rest.RequestOpt) (*discord.Message, error) {
+func FollowUp(
+	ctx *Ctx,
+	msg discord.MessageCreate,
+	opts ...rest.RequestOpt,
+) (*discord.Message, error) {
 	return ctx.CreateFollowupMessage(msg, opts...)
 }
 
 // Update updates the message the component interaction is from.
-func Update(ctx *Ctx, msg discord.MessageUpdate, opts ...rest.RequestOpt) error {
+func Update(
+	ctx *Ctx,
+	msg discord.MessageUpdate,
+	opts ...rest.RequestOpt,
+) error {
 	return ctx.UpdateMessage(msg, opts...)
 }
 
 // ModalRespond responds to the interaction with a modal.
-func ModalRespond(ctx *Ctx, modal discord.ModalCreate, opts ...rest.RequestOpt) error {
+func ModalRespond(
+	ctx *Ctx,
+	modal discord.ModalCreate,
+	opts ...rest.RequestOpt,
+) error {
 	return ctx.Modal(modal, opts...)
 }
 
@@ -40,12 +56,14 @@ func ErrorResponse(ctx *Ctx, ephemeral ...bool) error {
 		WithDescription("Sorry, something broke along the way! My developer has been informed. Sorry for the inconvenience!")
 
 	ep := len(ephemeral) > 0 && ephemeral[0]
+
 	msg := discord.MessageCreate{
 		Embeds: []discord.Embed{embed},
 	}
 	if ep {
 		msg.Flags = discord.MessageFlagEphemeral
 	}
+
 	return ctx.CreateMessage(msg)
 }
 
@@ -58,6 +76,7 @@ func InteractionError(ctx *Ctx, isFollowup bool) {
 			Content: content,
 			Flags:   discord.MessageFlagEphemeral,
 		})
+
 		return
 	}
 

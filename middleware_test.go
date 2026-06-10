@@ -10,6 +10,7 @@ func TestCtxNext_RunsHandlersInOrder(t *testing.T) {
 	makeHandler := func(n int) Handler {
 		return HandlerFunc(func(ctx *Ctx) {
 			order = append(order, n)
+
 			ctx.Next()
 		})
 	}
@@ -27,6 +28,7 @@ func TestCtxNext_RunsHandlersInOrder(t *testing.T) {
 	if len(order) != 3 {
 		t.Fatalf("expected 3 handlers called, got %d", len(order))
 	}
+
 	for i, v := range order {
 		if v != i+1 {
 			t.Fatalf("expected order[%d]=%d, got %d", i, i+1, v)
@@ -63,6 +65,7 @@ func TestHandlerFunc(t *testing.T) {
 	called := false
 	h := HandlerFunc(func(ctx *Ctx) { called = true })
 	h.HandleCommand(&Ctx{})
+
 	if !called {
 		t.Fatal("HandlerFunc.HandleCommand should have called the function")
 	}

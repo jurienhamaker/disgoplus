@@ -36,9 +36,11 @@ func newRouter() *Router {
 // NewRouter creates a Router pre-populated with the given commands.
 func NewRouter(cmds []*Command) *Router {
 	r := newRouter()
+
 	for _, cmd := range cmds {
 		r.Register(cmd)
 	}
+
 	return r
 }
 
@@ -68,6 +70,7 @@ func (r *Router) Count() int {
 	if r == nil {
 		return 0
 	}
+
 	return len(r.commands)
 }
 
@@ -76,10 +79,12 @@ func (r *Router) list() []*Command {
 	if r == nil {
 		return nil
 	}
+
 	cmds := make([]*Command, 0, len(r.commands))
 	for _, c := range r.commands {
 		cmds = append(cmds, c)
 	}
+
 	return cmds
 }
 
@@ -88,6 +93,7 @@ func (r *Router) get(name string) *Command {
 	if r == nil {
 		return nil
 	}
+
 	return r.commands[name]
 }
 
@@ -101,7 +107,11 @@ func (r *Router) Commands() []*Command {
 // If guildID is non-zero, commands scoped to that guild ID are overwritten for
 // that guild; all other commands are written globally. If guildID is zero,
 // all commands are written globally.
-func (r *Router) Sync(client *bot.Client, appID snowflake.ID, guildID snowflake.ID) error {
+func (r *Router) Sync(
+	client *bot.Client,
+	appID snowflake.ID,
+	guildID snowflake.ID,
+) error {
 	global := make([]discord.ApplicationCommandCreate, 0)
 	perGuild := make(map[snowflake.ID][]discord.ApplicationCommandCreate)
 
@@ -112,9 +122,12 @@ func (r *Router) Sync(client *bot.Client, appID snowflake.ID, guildID snowflake.
 			if err != nil {
 				return err
 			}
+
 			perGuild[id] = append(perGuild[id], create)
+
 			continue
 		}
+
 		if guildID != 0 {
 			perGuild[guildID] = append(perGuild[guildID], create)
 		} else {
@@ -129,7 +142,11 @@ func (r *Router) Sync(client *bot.Client, appID snowflake.ID, guildID snowflake.
 	}
 
 	for gid, cmds := range perGuild {
-		if _, err := client.Rest.SetGuildCommands(appID, gid, cmds); err != nil {
+		if _, err := client.Rest.SetGuildCommands(
+			appID,
+			gid,
+			cmds,
+		); err != nil {
 			return err
 		}
 	}
@@ -149,10 +166,13 @@ func (r *Router) OnEvent(event bot.Event) {
 	}
 }
 
-func (r *Router) dispatchCommand(e *events.ApplicationCommandInteractionCreate) {
+func (r *Router) dispatchCommand(
+	e *events.ApplicationCommandInteractionCreate,
+) {
 	if e.Data.Type() != discord.ApplicationCommandTypeSlash {
 		return
 	}
+
 	data := e.Data.(discord.SlashCommandInteractionData)
 
 	cmd := r.get(data.CommandName())
@@ -170,12 +190,14 @@ func (r *Router) dispatchCommand(e *events.ApplicationCommandInteractionCreate) 
 		if groupCmd == nil {
 			return
 		}
+
 		handlers = append(handlers, groupCmd.Middlewares...)
 		if data.SubCommandName != nil {
 			subCmd := groupCmd.SubCommands.get(*data.SubCommandName)
 			if subCmd == nil {
 				return
 			}
+
 			handlers = append(handlers, subCmd.Middlewares...)
 			handlers = append(handlers, subCmd.Handler)
 			finalCmd = subCmd
@@ -186,6 +208,7 @@ func (r *Router) dispatchCommand(e *events.ApplicationCommandInteractionCreate) 
 		if subCmd == nil {
 			return
 		}
+
 		handlers = append(handlers, subCmd.Middlewares...)
 		handlers = append(handlers, subCmd.Handler)
 		finalCmd = subCmd
@@ -200,15 +223,19 @@ func (r *Router) dispatchCommand(e *events.ApplicationCommandInteractionCreate) 
 	ctx.Next()
 }
 
-func (r *Router) getComponent(customID string) (*MessageComponent, map[string]string) {
+func (r *Router) getComponent(
+	customID string,
+) (*MessageComponent, map[string]string) {
 	if mc, ok := r.messageComponents[customID]; ok {
 		return mc, nil
 	}
+
 	for _, mc := range r.messageComponents {
 		if params, ok := mc.try(customID); ok {
 			return mc, params
 		}
 	}
+
 	return nil, nil
 }
 
@@ -216,20 +243,24 @@ func (r *Router) getModal(customID string) (*Modal, map[string]string) {
 	if m, ok := r.modals[customID]; ok {
 		return m, nil
 	}
+
 	for _, m := range r.modals {
 		if params, ok := m.try(customID); ok {
 			return m, params
 		}
 	}
+
 	return nil, nil
 }
 
 func (r *Router) dispatchComponent(e *events.ComponentInteractionCreate) {
-	customID := e.ComponentInteraction.Data.CustomID()
+	customID := e.Data.CustomID()
+
 	mc, params := r.getComponent(customID)
 	if mc == nil {
 		return
 	}
+
 	handlers := append(slicesClone(mc.Middlewares), mc.Handler)
 	ctx := newComponentCtx(e, mc, params, handlers)
 	ctx.Next()
@@ -237,10 +268,12 @@ func (r *Router) dispatchComponent(e *events.ComponentInteractionCreate) {
 
 func (r *Router) dispatchModal(e *events.ModalSubmitInteractionCreate) {
 	customID := e.Data.CustomID
+
 	m, params := r.getModal(customID)
 	if m == nil {
 		return
 	}
+
 	handlers := append(slicesClone(m.Middlewares), m.Handler)
 	ctx := newModalCtx(e, m, params, handlers)
 	ctx.Next()
@@ -271,7 +304,9 @@ func slicesClone[S ~[]E, E any](s S) S {
 	if s == nil {
 		return nil
 	}
+
 	c := make(S, len(s))
 	copy(c, s)
+
 	return c
 }

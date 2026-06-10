@@ -8,14 +8,20 @@ func matchPart(b byte) func(byte) bool {
 	}
 }
 
-func match(s string, f func(byte) bool, i int) (matched string, next byte, j int) {
+func match(
+	s string,
+	f func(byte) bool,
+	i int,
+) (matched string, next byte, j int) {
 	j = i
 	for j < len(s) && f(s[j]) {
 		j++
 	}
+
 	if j < len(s) {
 		next = s[j]
 	}
+
 	return s[i:j], next, j
 }
 
@@ -36,17 +42,23 @@ func isAlnum(ch byte) bool {
 // Slug params use the :name syntax: "LEADERBOARD/:page".
 func trySlug(pattern, customID string) (map[string]string, bool) {
 	p := make(map[string]string)
+
 	var i, j int
 	for i < len(customID) {
 		switch {
 		case j >= len(pattern):
-			if pattern != "/" && len(pattern) > 0 && pattern[len(pattern)-1] == '/' {
+			if pattern != "/" && len(pattern) > 0 &&
+				pattern[len(pattern)-1] == '/' {
 				return nil, true
 			}
+
 			return nil, false
 		case pattern[j] == ':':
-			var name, val string
-			var nextc byte
+			var (
+				name, val string
+				nextc     byte
+			)
+
 			name, nextc, j = match(pattern, isAlnum, j+1)
 			val, _, i = match(customID, matchPart(nextc), i)
 			p[name] = val
@@ -57,8 +69,10 @@ func trySlug(pattern, customID string) (map[string]string, bool) {
 			return nil, false
 		}
 	}
+
 	if j != len(pattern) {
 		return nil, false
 	}
+
 	return p, true
 }
